@@ -1,19 +1,17 @@
 import json
 import re
+import time
 from datetime import datetime
+import os
 
 
-# this is Microservice A
-def request_data(log=None):
-    # check if log data exists
-    if log is None:
-        raise ValueError("Please provide log data")
-
+# this is the example "main" program
+def request_data():
     # user input for time data
     while True:
         try:
-            time = input("Enter a time in YYYY-MM-DD format: ")
-            datetime.strptime(time, "%Y-%m-%d")
+            time_input = input("Enter a time in YYYY-MM-DD format: ")
+            datetime.strptime(time_input, "%Y-%m-%d")
             break
         except ValueError:
             print("Invalid format. Please enter a time in YYYY-MM-DD format.")
@@ -81,35 +79,40 @@ def request_data(log=None):
 
     # create request dictionary with time and zipcode
     request = {
-        'time': time,
+        'time': time_input,
         'zipcode': zipcode,
         'temperature': temperature,
         'humidity': humidity,
         'precipitation': precipitation
     }
 
-    output_list = []
+    # write parameter data to request_data.json to be read by microservice
+    with open('request_data.json', 'w') as f:
+        json.dump(request, f)
 
-    for report in log:
-        # check if time and zipcode match
-        if request['time'] == report['time'] and request['zipcode'] == report['zipcode']:
-            # check if optional condition (temperature, humidity, precipitation) is provided
-            if (request['temperature'] is None or request['temperature'] == report['temperature']) and \
-                    (request['humidity'] is None or request['humidity'] == report['humidity']) and \
-                    (request['precipitation'] is None or request['precipitation'] == report['precipitation']):
-                output_list.append(report)
+    print("")
+    print("Filtering parameters written to request_data.json:")
+    print(request)
+    print("")
 
-    # write result to a response_data.json to be read by response.py
-    with open('response_data.json', 'w') as f:
-        json.dump(output_list, f)
-    print(f"Data has been written to response_data.json: {request}")
+    # wait for the microservice to process the request
+    time.sleep(5)
+
+    # read incoming filtered data from microservice
+    while True:
+        if os.path.exists('request_data.json'):
+            with open('request_data.json', 'r') as f:
+                data = json.load(f)
+                break
+
+    # display the response
+    if data:
+        print("Filtered dataset received:")
+        for report in data["filtered_results"]:
+            print(report)
+    else:
+        print("No data matches the given parameters. Please try again.")
 
 
-# small sample log data for testing
-log_data = [
-    {'time': '2025-02-16', 'zipcode': 10001, 'temperature': 50.0, 'humidity': 60.0, 'precipitation': 0.1},
-    {'time': '2025-02-16', 'zipcode': 10001, 'temperature': 55.5, 'humidity': 65.5, 'precipitation': 0.2},
-    {'time': '2025-02-16', 'zipcode': 20001, 'temperature': 48.7, 'humidity': 70.7, 'precipitation': 0.3},
-    {'time': '2025-02-16', 'zipcode': 10001, 'temperature': 45.8, 'humidity': 50.8, 'precipitation': 0.0}
-]
-request_data(log=log_data)
+if __name__ == "__main__":
+    request_data()
