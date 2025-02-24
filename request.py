@@ -106,7 +106,7 @@ def request_data():
                 break
 
     # display the response
-    if data:
+    if data and data["filtered_results"]:
         print("Filtered dataset received:")
         for report in data["filtered_results"]:
             print(report)

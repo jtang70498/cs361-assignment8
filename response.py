@@ -36,7 +36,7 @@ def process_request():
                         print("Invalid JSON format, request not processed.")
                         continue
 
-                # Check if the request was already processed
+                # check if the request was already processed
                 if request.get("processed"):
                     continue
 
@@ -50,6 +50,11 @@ def process_request():
                            (request['precipitation'] is None or request['precipitation'] == report['precipitation']):
                             output_list.append(report)
 
+                if request.get("processed") is None:
+                    print("Filtering parameters received by request_data.json:")
+                    print(request)
+                    print("")
+
                 # add "processed" flag and write back to the same file
                 request["filtered_results"] = output_list
                 request["processed"] = True
@@ -58,7 +63,7 @@ def process_request():
                 with open('request_data.json', 'w') as f:
                     json.dump(request, f, indent=2)
 
-                print("Filtered data has been written to response_data.json:")
+                print("Filtered data has been written to request_data.json:")
                 for report in output_list:
                     print(report)
 
