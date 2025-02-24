@@ -63,6 +63,9 @@ def process_request():
                 with open('request_data.json', 'w') as f:
                     json.dump(request, f, indent=2)
 
+                # wait a bit
+                time.sleep(3)
+
                 print("Filtered data has been written to request_data.json:")
                 for report in output_list:
                     print(report)
